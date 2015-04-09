@@ -9,6 +9,7 @@ import geb.navigator.EmptyNavigator
 import geb.navigator.Navigator
 import geb.navigator.SelectFactory
 import geb.textmatching.TextMatcher
+import geb.waiting.Wait
 import geb.waiting.WaitTimeoutException
 import groovy.util.logging.Slf4j
 import org.openqa.selenium.By
@@ -695,6 +696,139 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     @Override
     boolean isEditable() {
         return true
+    }
+
+
+    // TODO:  new geb 0.10.0 methods... do we need to implement?
+
+    @Override
+    Navigator next(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator next(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator nextAll(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator nextAll(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator nextUntil(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator nextUntil(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator previous(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator previous(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator prevAll(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator prevAll(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator prevUntil(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator prevUntil(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator parent(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator parent(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator parents(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator parents(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator parentsUntil(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator parentsUntil(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator closest(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator closest(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator children(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator children(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator siblings(Map<String, Object> attributes) {
+        return null
+    }
+
+    @Override
+    Navigator siblings(Map<String, Object> attributes, String selector) {
+        return null
+    }
+
+    @Override
+    Navigator click(Class<? extends Page> pageClass, Wait wait) {
+        return null
+    }
+
+    @Override
+    Navigator click(List<Class<? extends Page>> potentialPageClasses, Wait wait) {
+        return null
     }
 
 
