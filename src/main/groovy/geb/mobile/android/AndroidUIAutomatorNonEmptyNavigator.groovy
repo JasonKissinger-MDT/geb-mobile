@@ -34,23 +34,17 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
         if (selectorString.startsWith("#")) {
             String value = selectorString.substring(1)
-            if( value.indexOf(':')>0 ) {
-                try{
-                    return navigatorFor(driver.findElementsByAndroidUIAutomator("resourceId(\"$value\")"))
-                }catch(e){
-                    log.warn("Selector $selectorString: findElementsByAndroidUIAutomator resourceId(\"$value\") : $e.message")
-                    return new EmptyNavigator()
-                }
-            }else {
-                def apk = getAppPackage()
-                if( !apk ) log.warn("for Selector $selectorString : AppPackage is emtpy, result may not be correct ")
-                try {
-                    return navigatorFor(driver.findElementsByAndroidUIAutomator("resourceId(\"$appPackage:id/$value\")"))
-                }catch(e){
-                    log.warn("Selector $selectorString: findElementsByAndroidUIAutomator resourceId(\"$appPackage:id/$value\") ")
-                    return new EmptyNavigator()
-                }
+            String resource = value.indexOf(':') ? "resourceId(\"$value\")" : "resourceId(\"$appPackage:id/$value\")"
+            log.debug " android selector: $resource"
+            List<WebElement> elements = driver.findElementsByAndroidUIAutomator(resource)
+            if (elements.isEmpty()) {
+                // TODO:  this doesn't work yet
+                String scrollingResource = "new UIScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().$resource)"
+                log.debug " not found, try to scroll and find: $scrollingResource"
+                elements = driver.findElementByAndroidUIAutomator(scrollingResource)
             }
+
+            return navigatorFor(elements)
         } else if( selectorString.startsWith(".") ){
             //This works only on WEB_VIEW
             return navigatorFor(driver.findElementsByCssSelector(selectorString) )
