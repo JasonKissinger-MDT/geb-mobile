@@ -30,7 +30,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
         List<WebElement> list = []
 
-        if (!contextElements) {
+        if (!contextElements || (by instanceof By.ByXPath)) {
             list = driver.findElements(by)
         } else {
             contextElements?.each { WebElement element ->
