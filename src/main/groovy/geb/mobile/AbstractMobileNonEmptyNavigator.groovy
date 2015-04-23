@@ -5,6 +5,7 @@ import geb.Page
 import geb.error.UndefinedAtCheckerException
 import geb.error.UnexpectedPageException
 import geb.navigator.AbstractNavigator
+import geb.navigator.CssSelector
 import geb.navigator.EmptyNavigator
 import geb.navigator.Navigator
 import geb.navigator.SelectFactory
@@ -14,7 +15,6 @@ import geb.waiting.WaitTimeoutException
 import groovy.util.logging.Slf4j
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
-import org.openqa.selenium.remote.RemoteWebElement
 import sun.reflect.generics.reflectiveObjects.NotImplementedException
 
 import java.util.regex.Pattern

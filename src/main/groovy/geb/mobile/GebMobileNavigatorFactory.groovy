@@ -8,6 +8,8 @@ import geb.navigator.factory.NavigatorBackedNavigatorFactory
 import geb.navigator.factory.NavigatorFactory
 import groovy.util.logging.Slf4j
 import io.appium.java_client.AppiumDriver
+import io.appium.java_client.FindsByAndroidUIAutomator
+import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebElement
@@ -18,11 +20,8 @@ import org.openqa.selenium.remote.RemoteWebElement
 @Slf4j
 class GebMobileNavigatorFactory implements NavigatorFactory {
 
-
     private final Browser browser
     private final GebMobileInnerNavigatorFactory innerNavigatorFactory
-
-    private Navigator _base ;
 
     String context
 
@@ -38,23 +37,16 @@ class GebMobileNavigatorFactory implements NavigatorFactory {
 
     @Override
     Navigator getBase() {
-        if( _base == null )
-            _base = createFromWebElements([new RemoteWebElement()])
+        List<WebElement> list
 
-        return _base
-        //innerNavigatorFactory.createNavigator(browser,null)
-        //xpath works with all selenium implementations...
-//        log.debug("Create Navigator from Base...")
-//        def drv = browser.driver
-//        List<WebElement> list
-//        if( drv instanceof AndroidDriver ){
-//            list = drv.findElementsByAndroidUIAutomator("new UiSelector().className(android.widget.FrameLayout).index(0)")
-//            log.debug("Loaded from Base 'new UiSelector().className(android.widget.FrameLayout).index(0)' with ${list.size()} Elements")
-//        }else {
-//            list = browser.driver.findElementsByXPath("//*") as List
-//            log.debug("Loaded from Base '//*' with ${list.size()} Elements")
-//        }
-//        createFromWebElements(list)
+        if (browser.driver instanceof AndroidDriver) {
+            // The base element should be the top element in the hierarchy
+            list = Arrays.asList(new AndroidRootElement(browser.driver))
+        } else {
+            list = browser.driver.findElementsByXPath("//*") as List
+        }
+
+        createFromWebElements(list)
     }
 
     protected Browser getBrowser() {
@@ -85,6 +77,22 @@ class GebMobileNavigatorFactory implements NavigatorFactory {
         new NavigatorBackedNavigatorFactory(newBase, innerNavigatorFactory)
     }
 
+    private class AndroidRootElement extends MobileElement implements FindsByAndroidUIAutomator {
+        AndroidDriver driver
 
+        AndroidRootElement(AndroidDriver driver) {
+            this.driver = driver
+        }
+
+        @Override
+        public WebElement findElementByAndroidUIAutomator(String using) {
+            driver.findElementByAndroidUIAutomator(using);
+        }
+
+        @Override
+        public List<WebElement> findElementsByAndroidUIAutomator(String using) {
+            driver.findElementsByAndroidUIAutomator(using);
+        }
+    }
 
 }

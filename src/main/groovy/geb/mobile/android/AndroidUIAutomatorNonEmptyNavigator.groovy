@@ -4,6 +4,7 @@ import geb.Browser
 import geb.mobile.AbstractMobileNonEmptyNavigator
 import geb.navigator.Navigator
 import groovy.util.logging.Slf4j
+import io.appium.java_client.MobileBy
 import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.By
@@ -25,35 +26,50 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
     @Override
     Navigator find(String selectorString) {
-        log.debug "Selector: $selectorString"
+        By by = getByForSelector(selectorString)
 
-        if (selectorString.startsWith("//")) {
-            return navigatorFor(driver.findElements(By.xpath(selectorString)))
-        }
+        List<WebElement> list = []
 
-        if (selectorString.startsWith("#")) {
-            String value = selectorString.substring(1)
-            String resource = value.indexOf(':') != -1 ? "resourceId(\"$value\")" : "resourceId(\"$appPackage:id/$value\")"
-            log.debug " android selector: $resource"
-            List<WebElement> elements = driver.findElementsByAndroidUIAutomator(resource)
-            if (elements.isEmpty()) {
-                String scrollingResource = "new UiScrollable(new UiSelector().scrollable(true).instance(0)).scrollIntoView(new UiSelector().${resource}.instance(0))"
-                log.debug " not found, try to scroll and find: $scrollingResource"
-                elements = driver.findElementsByAndroidUIAutomator(scrollingResource)
-            }
-
-            return navigatorFor(elements)
-        } else if( selectorString.startsWith(".") ){
-            //This works only on WEB_VIEW
-            return navigatorFor(driver.findElementsByCssSelector(selectorString) )
+        if (!contextElements) {
+            list = driver.findElements(by)
         } else {
-            selectorString = selectorString.replaceAll("'", '\"')
-            log.debug "Using UIAutomator with: $selectorString"
-            navigatorFor(driver.findElementsByAndroidUIAutomator(selectorString))
+            contextElements?.each { WebElement element ->
+                List<WebElement> found = element.findElements(by)
+
+                if (!found && by instanceof MobileBy.ByAndroidUIAutomator) {
+                    By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
+                    log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
+
+                    found = element.findElements(scrolledBy)
+                }
+
+                list.addAll(found)
+            }
         }
 
+        log.debug "Found $list.size() elements"
+
+        navigatorFor(list)
     }
 
+    private By getByForSelector(String selectorString) {
+        By by
+        if (selectorString.startsWith("//")) {
+            by = By.xpath(selectorString)
+        } else if (selectorString.startsWith("#")) {
+            String value = selectorString.substring(1)
+            String resource = value.indexOf(':') != -1 ? "$value" : "$appPackage:id/$value"
+            by = MobileBy.AndroidUIAutomator("resourceId(\"$resource\")")
+        } else if (selectorString.startsWith(".")) {
+            String value = selectorString.substring(1)
+            by = MobileBy.className(value);
+        } else {
+            by = MobileBy.AndroidUIAutomator(selectorString?.replaceAll("'", '\"'))
+        }
+
+        log.debug "Using $by selector"
+        by
+    }
 
     @Override
     Navigator unique() {
@@ -96,9 +112,9 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
             } else if (checked && !value ) {
                 input.click()
             }
-        }else {
+        } else {
             //TODO: hideKeyboard after sendKeys
-            //TODO: clear Copy/Paste 
+            //TODO: clear Copy/Paste
 //            input.clear()
             //input.sendKeys(Keys.HOME,Keys.chord(Keys.SHIFT,Keys.END),value);
             input.sendKeys value as String
