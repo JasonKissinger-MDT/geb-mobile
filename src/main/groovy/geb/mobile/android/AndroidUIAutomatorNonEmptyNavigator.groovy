@@ -8,6 +8,7 @@ import io.appium.java_client.MobileBy
 import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.By
+import org.openqa.selenium.UnsupportedCommandException
 import org.openqa.selenium.WebElement
 
 /**
@@ -40,7 +41,14 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                     By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
                     log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
 
-                    found = element.findElements(scrolledBy)
+                    try {
+                        found = element.findElements(scrolledBy)
+                    } catch (UnsupportedCommandException e) {
+                        // this exception will be thrown if the selector is invalid or can not be found on a scrollIntoView, either way we just want
+                        // to return an empty list vs. bubbling up an exception
+                        log.debug "Scroll into view failed, returning empty set.  The message was $e"
+                        found = []
+                    }
                 }
 
                 list.addAll(found)
