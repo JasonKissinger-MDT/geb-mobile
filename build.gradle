@@ -13,7 +13,7 @@ apply plugin: 'maven-publish'
 
 group = 'geb.mobile'
 version = new ProjectVersion(1, 0, System.env.BUILD_NUMBER)
-
+startAppium
 ext.gebVersion = '0.10.0'
 ext.seleniumVersion = '2.45.0'
 ext.spockVersion = '1.0-groovy-2.3'
@@ -254,6 +254,8 @@ task appiumOnTestObjects(type: Test) {
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifactId = 'geb-mobile'
+
             from components.java
         }
     }
