@@ -149,7 +149,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
             input.click()
             driver.scrollTo(value?.toString())?.click()
         } catch (e) {
-            log.warn("Could not set $value to $input.tagName : $e.message")
+            log.warn("Could not set $value to $input : $e.message")
         }
     }
 

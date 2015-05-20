@@ -36,7 +36,6 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     AbstractMobileNonEmptyNavigator(Browser browser, Collection<? extends WebElement> contextElements) {
         super(browser)
         this.contextElements = contextElements.toList().asImmutable()
-        //this._props = firstElement().properties
         this.driver = (T)browser.driver
     }
 
@@ -325,8 +324,7 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     String text() {
         firstElement().text ?: getAttribute("name")
     }
-
-
+    
     @Override
     String getAttribute(String name) {
 
@@ -830,7 +828,4 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     Navigator click(List<Class<? extends Page>> potentialPageClasses, Wait wait) {
         return null
     }
-
-
-
 }
