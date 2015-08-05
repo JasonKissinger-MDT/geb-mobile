@@ -121,10 +121,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 input.click()
             }
         } else {
-            //TODO: hideKeyboard after sendKeys
-            //TODO: clear Copy/Paste
-//            input.clear()
-            //input.sendKeys(Keys.HOME,Keys.chord(Keys.SHIFT,Keys.END),value);
+            input.clear()
             input.sendKeys value as String
 
             try{
