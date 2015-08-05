@@ -135,7 +135,6 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 input.click()
             }
         } else {
-            input.clear()
             input.sendKeys value as String
         }
     }
