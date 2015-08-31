@@ -121,6 +121,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 input.click()
             }
         } else {
+            // added back input clear because it is still needed until replaceValue is available https://github.com/appium/java-client/pull/235
             input.clear()
             input.sendKeys value as String
 
