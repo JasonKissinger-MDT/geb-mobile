@@ -2,17 +2,13 @@ package geb.mobile
 
 import geb.Browser
 import geb.navigator.Navigator
-import geb.navigator.factory.AbstractNavigatorFactory
-import geb.navigator.factory.InnerNavigatorFactory
 import geb.navigator.factory.NavigatorBackedNavigatorFactory
 import geb.navigator.factory.NavigatorFactory
 import groovy.util.logging.Slf4j
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.FindsByAndroidUIAutomator
 import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.WebElement
-import org.openqa.selenium.remote.RemoteWebElement
 
 /**
  * Created by gmueksch on 23.06.14.
