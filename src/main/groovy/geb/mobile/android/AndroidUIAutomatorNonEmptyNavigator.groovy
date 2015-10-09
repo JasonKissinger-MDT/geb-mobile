@@ -38,16 +38,20 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 List<WebElement> found = element.findElements(by)
 
                 if (!found && by instanceof MobileBy.ByAndroidUIAutomator) {
-                    By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
-                    log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
+                    List<WebElement> scrollable = element.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
 
-                    try {
-                        found = element.findElements(scrolledBy)
-                    } catch (UnsupportedCommandException e) {
-                        // this exception will be thrown if the selector is invalid or can not be found on a scrollIntoView, either way we just want
-                        // to return an empty list vs. bubbling up an exception
-                        log.debug "Scroll into view failed, returning empty set.  The message was $e"
-                        found = []
+                    if (scrollable) {
+                        By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
+                        log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
+
+                        try {
+                            found = element.findElements(scrolledBy)
+                        } catch (UnsupportedCommandException e) {
+                            // this exception will be thrown if the selector is invalid or can not be found on a scrollIntoView, either way we just want
+                            // to return an empty list vs. bubbling up an exception
+                            log.debug "Scroll into view failed, returning empty set.  The message was $e"
+                            found = []
+                        }
                     }
                 }
 
