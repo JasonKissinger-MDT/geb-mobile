@@ -38,7 +38,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 List<WebElement> found = element.findElements(by)
 
                 if (!found && by instanceof MobileBy.ByAndroidUIAutomator) {
-                    List<WebElement> scrollable = element.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
+                    // This is a temporary workaround for https://github.com/appium/appium/issues/5721
+                    List<WebElement> scrollable = driver.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
 
                     if (scrollable) {
                         By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
@@ -52,6 +53,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                             log.debug "Scroll into view failed, returning empty set.  The message was $e"
                             found = []
                         }
+                    } else {
+                        log.debug "No scrollable found, will not attempt to scroll for element"
                     }
                 }
 
