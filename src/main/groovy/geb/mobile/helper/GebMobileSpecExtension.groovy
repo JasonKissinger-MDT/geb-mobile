@@ -14,4 +14,14 @@ class GebMobileSpecExtension implements IGlobalExtension {
             specInfo.addListener(new GebMobileSpecListener())
         }
     }
+
+    @Override
+    void start() {
+
+    }
+
+    @Override
+    void stop() {
+
+    }
 }

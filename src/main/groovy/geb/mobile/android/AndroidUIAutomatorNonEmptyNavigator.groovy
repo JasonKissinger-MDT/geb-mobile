@@ -2,12 +2,13 @@ package geb.mobile.android
 
 import geb.Browser
 import geb.mobile.AbstractMobileNonEmptyNavigator
-import geb.navigator.EmptyNavigator
 import geb.navigator.Navigator
 import groovy.util.logging.Slf4j
+import io.appium.java_client.MobileBy
 import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
 import org.openqa.selenium.By
+import org.openqa.selenium.UnsupportedCommandException
 import org.openqa.selenium.WebElement
 
 /**
@@ -26,42 +27,64 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
     @Override
     Navigator find(String selectorString) {
-        log.debug "Selector: $selectorString"
+        By by = getByForSelector(selectorString)
 
-        if (selectorString.startsWith("//")) {
-            return navigatorFor(driver.findElements(By.xpath(selectorString)))
-        }
+        List<WebElement> list = []
 
-        if (selectorString.startsWith("#")) {
-            String value = selectorString.substring(1)
-            if( value.indexOf(':')>0 ) {
-                try{
-                    return navigatorFor(driver.findElementsByAndroidUIAutomator("resourceId(\"$value\")"))
-                }catch(e){
-                    log.warn("Selector $selectorString: findElementsByAndroidUIAutomator resourceId(\"$value\") : $e.message")
-                    return new EmptyNavigator()
-                }
-            }else {
-                def apk = getAppPackage()
-                if( !apk ) log.warn("for Selector $selectorString : AppPackage is emtpy, result may not be correct ")
-                try {
-                    return navigatorFor(driver.findElementsByAndroidUIAutomator("resourceId(\"$appPackage:id/$value\")"))
-                }catch(e){
-                    log.warn("Selector $selectorString: findElementsByAndroidUIAutomator resourceId(\"$appPackage:id/$value\") ")
-                    return new EmptyNavigator()
-                }
-            }
-        } else if( selectorString.startsWith(".") ){
-            //This works only on WEB_VIEW
-            return navigatorFor(driver.findElementsByCssSelector(selectorString) )
+        if (!contextElements || (by instanceof By.ByXPath)) {
+            list = driver.findElements(by)
         } else {
-            selectorString = selectorString.replaceAll("'", '\"')
-            log.debug "Using UIAutomator with: $selectorString"
-            navigatorFor(driver.findElementsByAndroidUIAutomator(selectorString))
+            contextElements?.each { WebElement element ->
+                List<WebElement> found = element.findElements(by)
+
+                if (!found && by instanceof MobileBy.ByAndroidUIAutomator) {
+                    // This is a temporary workaround for https://github.com/appium/appium/issues/5721
+                    List<WebElement> scrollable = driver.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
+
+                    if (scrollable) {
+                        By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
+                        log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
+
+                        try {
+                            found = element.findElements(scrolledBy)
+                        } catch (UnsupportedCommandException e) {
+                            // this exception will be thrown if the selector is invalid or can not be found on a scrollIntoView, either way we just want
+                            // to return an empty list vs. bubbling up an exception
+                            log.debug "Scroll into view failed, returning empty set.  The message was $e"
+                            found = []
+                        }
+                    } else {
+                        log.debug "No scrollable found, will not attempt to scroll for element"
+                    }
+                }
+
+                list.addAll(found)
+            }
         }
 
+        log.debug "Found $list.size() elements"
+
+        navigatorFor(list)
     }
 
+    private By getByForSelector(String selectorString) {
+        By by
+        if (selectorString.startsWith("//")) {
+            by = By.xpath(selectorString)
+        } else if (selectorString.startsWith("#")) {
+            String value = selectorString.substring(1)
+            String resource = value.indexOf(':') != -1 ? "$value" : "$appPackage:id/$value"
+            by = MobileBy.AndroidUIAutomator("resourceId(\"$resource\")")
+        } else if (selectorString.startsWith(".")) {
+            String value = selectorString.substring(1)
+            by = MobileBy.className(value);
+        } else {
+            by = MobileBy.AndroidUIAutomator(selectorString?.replaceAll("'", '\"'))
+        }
+
+        log.debug "Using $by selector"
+        by
+    }
 
     @Override
     Navigator unique() {
@@ -104,11 +127,9 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
             } else if (checked && !value ) {
                 input.click()
             }
-        }else {
-            //TODO: hideKeyboard after sendKeys
-            //TODO: clear Copy/Paste 
-//            input.clear()
-            //input.sendKeys(Keys.HOME,Keys.chord(Keys.SHIFT,Keys.END),value);
+        } else {
+            // added back input clear because it is still needed until replaceValue is available https://github.com/appium/java-client/pull/235
+            input.clear()
             input.sendKeys value as String
 
             try{
@@ -133,7 +154,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
             input.click()
             driver.scrollTo(value?.toString())?.click()
         } catch (e) {
-            log.warn("Could not set $value to $input.tagName : $e.message")
+            log.warn("Could not set $value to $input : $e.message")
         }
     }
 

@@ -25,7 +25,11 @@ abstract class AndroidBaseActivity extends Page {
     private AndroidHelper _helper
 
     static at = {
-        getActivityName() ? currentActivity == getActivityName() : true
+        // TODO this waitFor was removed from geb-mobile, but we are too reliant on it at this point, it would be better
+        // not to have the waitFor in the at so that we can use at even when we do not wish to wait.
+        waitFor {
+            getActivityName() ? currentActivity == getActivityName() : true
+        }
     }
 
     public AndroidHelper getHelper(){
