@@ -32,7 +32,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
         List<WebElement> list = []
 
         if (!contextElements || (by instanceof By.ByXPath)) {
-            list = driver.findElements(by)
+            List<WebElement> found = driver.findElements(by)
+            found && list.addAll(found)
         } else {
             contextElements?.each { WebElement element ->
                 List<WebElement> found = element.findElements(by)
@@ -58,7 +59,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                     }
                 }
 
-                list.addAll(found)
+                found && list.addAll(found)
             }
         }
 

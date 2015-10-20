@@ -26,15 +26,31 @@ ext.selendroidVersion = '0.11.0'
 ext.appiumClientVersion = '2.2.0'
 ext.iosClientVersion =  '0.6+'
 
-
 repositories {
     mavenLocal()
     mavenCentral()
 }
 
+sourceSets {
+    integrationTest {
+        compileClasspath += main.output + test.output
+        runtimeClasspath += main.output + test.output
+    }
+}
+
 configurations {
     selendroid
     iosdriver
+}
+
+idea {
+    module {
+        sourceDirs -= file('src/main/java')
+        testSourceDirs -= file('src/test/java')
+
+        testSourceDirs += file('src/integrationTest/groovy')
+        testSourceDirs += file('src/integrationTest/resources')
+    }
 }
 
 dependencies {
@@ -44,18 +60,6 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.2'
     compile "org.seleniumhq.selenium:selenium-java:$seleniumVersion"
 
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile("org.gebish:geb-spock:$gebVersion") {
-        exclude module: "groovy"
-        exclude module: "groovy-all"
-    }
-    compile("org.spockframework:spock-core:$spockVersion") {
-        exclude module: "junit"
-        exclude module: "groovy"
-        exclude module: "groovy-all"
-    }
-
-    compile "org.codehaus.groovy:groovy-all:$groovyVersion"
     compile("org.gebish:geb-spock:$gebVersion") {
         exclude module: "groovy"
         exclude module: "groovy-all"
@@ -71,17 +75,16 @@ dependencies {
     compile "org.uiautomation:ios-client:$iosClientVersion"
     compile ("io.appium:java-client:$appiumClientVersion")
 
+    integrationTestCompile group: 'junit', name: 'junit', version: '4.11'
+    integrationTestCompile sourceSets.main.output
+    integrationTestCompile configurations.testCompile
+    integrationTestCompile sourceSets.test.output
+    integrationTestRuntime configurations.testRuntime
+
     selendroid "io.selendroid:selendroid-standalone:${selendroidVersion}"
 
     iosdriver "org.uiautomation:ios-server:0.6+"
-    //compile "org.uiautomation:ios-server:0.6+"
-
-//    appium ("io.appium:java-client:$appiumClientVersion") {
-//        exclude module: "selenium-java"
-//    }
 }
-
-
 
 def startServer = { server, command ->
     if( System.properties.'skipServer')  { println "Skipping Server $server "; return }
@@ -144,7 +147,6 @@ task stopServers(group:'Server') << {
 }
 
 task runSelendroidTests(group:'Android',type: Test, dependsOn: [startSelendroid]) {
-
     systemProperties.put "framework", "selendroid"
     systemProperties.put "appUT_absolutePath", "${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
@@ -210,11 +212,6 @@ tasks.withType(Test){ task->
     }
 }
 
-test {
-    // for now there aren't any unit tests, just device tests, so call them with the appropriate task
-    exclude "**/*"
-}
-
 task checkenv << {
     if( System.properties.'os.name'.toLowerCase().startsWith("mac") ){
         println "MAC ... "
@@ -231,7 +228,6 @@ println "sauceLabsKey: ${ext.sauceLabsKey}"
 
 ext.saucelabsUrl  = "http://${sauceLabsUser}:${sauceLabsKey}@ondemand.saucelabs.com:80/wd/hub"
 
-
 task appiumOnSauceLabs(type: Test) {
     systemProperty "framework","appium"
     systemProperty "appium_app","sauce-storage:selendroid-test-app-0.9.0.apk"
@@ -245,7 +241,7 @@ task appiumOnSauceLabs(type: Test) {
 }
 
 task uploadApk2Saucelabs(){
-    def appFile = new File("${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk")
+    def appFile = new File("${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk")
     inputs.file appFile
     outputs.upToDateWhen { true }
 
@@ -288,6 +284,25 @@ task appiumOnTestObjects(type: Test) {
     include '**/GebMobileAutomationTestWithPagesSpec.*'
 }
 
+[
+        runSelendroidTests,
+        runAppiumTests,
+        runAppiumTestsWithSelendroidDriver,
+        runAppiumTestsWithOldDevice,
+        runIosdriverTests,
+        runIosdriverInitTests,
+        appiumOnTestObjects,
+        appiumOnSauceLabs,
+        runIosdriverInitTestsReal
+].each {
+    it.testClassesDir = sourceSets.integrationTest.output.classesDir
+    it.classpath = sourceSets.integrationTest.runtimeClasspath
+
+    it.beforeTest { descriptor ->
+        logger.lifecycle "Running test: $descriptor"
+    }
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
@@ -307,7 +322,6 @@ publishing {
         }
     }
 }
-
 
 // TODO:  figure out how to do this?
 //apply from: '../gradle/versioning.gradle'
@@ -339,5 +353,3 @@ class ProjectVersion {
     }
 }
 // stop versioning.gradle
-
-
