@@ -1,8 +1,13 @@
+import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.ContentType
+
 buildscript {
     repositories {
         mavenLocal()
+        mavenCentral()
     }
     dependencies {
+        classpath 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'
     }
 }
 
@@ -239,8 +244,34 @@ task appiumOnSauceLabs(type: Test) {
     include '**/UIAutomatorNavigatorTestWithPagesSpec.*'
 }
 
-task uploadApk2Saucelabs(type:Exec){
-    commandLine = ['curl', '-u', "$sauceLabsUser:$sauceLabsKey", '-X', 'POST', "http://saucelabs.com/rest/v1/storage/$sauceLabsUser/selendroid-test-app-0.9.0.apk?overwrite=true", '-H', 'Content-Type: application/octet-stream', '--data-binary', "@${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk" ]
+task uploadApk2Saucelabs(){
+    def appFile = new File("${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk")
+    inputs.file appFile
+    outputs.upToDateWhen { true }
+
+    doLast {
+        String sauceStorageUrl = "https://${sauceLabsUser}:${sauceLabsKey}@saucelabs.com/rest/v1/storage/${sauceLabsUser}/selendroid-test-app-0.9.0.apk?overwrite=true"
+        logger.lifecycle "Uploading apk to sauce storage at: ${sauceStorageUrl}"
+        def sauceStorage = new HTTPBuilder(sauceStorageUrl)
+        sauceStorage.handler.failure = { resp ->
+            logger.error "  unexpected failure: ${resp.statusLine}"
+        }
+
+        sauceStorage.client.params?.with {
+            int timeout = 120 * 1000
+            setParameter("http.connection.timeout", timeout)
+            setParameter("http.socket.timeout", timeout)
+        }
+
+        try {
+            logger.lifecycle "uploading appfile size:" + appFile?.bytes?.size()
+            sauceStorage.post(requestContentType: ContentType.BINARY, body: appFile.bytes)
+        } catch (Exception e) {
+            e.printStackTrace()
+            logger.lifecycle "trying to upload again"
+            sauceStorage.post(requestContentType: ContentType.BINARY, body: appFile.bytes)
+        }
+    }
 }
 
 ext.testobjectApiKey = System.getProperty("testobjectApiKey", System.getenv("TESTOBJECT_APIKEY"))
