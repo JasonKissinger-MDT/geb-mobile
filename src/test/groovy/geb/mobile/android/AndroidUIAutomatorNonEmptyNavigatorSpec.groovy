@@ -1,25 +1,16 @@
 package geb.mobile.android
 
-import geb.Browser
-import geb.navigator.factory.NavigatorFactory
+import geb.mobile.BaseMobileNonEmptyNavigatorSpec
 import io.appium.java_client.MobileBy
 import io.appium.java_client.MobileElement
 import org.openqa.selenium.By
-import org.openqa.selenium.Capabilities
-import org.openqa.selenium.remote.DesiredCapabilities
-import org.openqa.selenium.remote.RemoteWebDriver
-import spock.lang.Specification
 
-class AndroidUIAutomatorNonEmptyNavigatorSpec extends Specification {
-    AndroidUIAutomatorNonEmptyNavigator navigator
-
-    NavigatorFactory mockNavigatorFactory = Mock(NavigatorFactory)
-    RemoteWebDriver mockDriver = Mock(RemoteWebDriver)
-    Browser mockBrowser = Mock(Browser)
-    MobileElement mockContextElement = Mock(MobileElement)
+class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigatorSpec<AndroidUIAutomatorNonEmptyNavigator> {
     MobileElement mockFoundElement = Mock(MobileElement)
 
-    def setup() {
+    @Override
+    AndroidUIAutomatorNonEmptyNavigator createNavigator() {
+        new AndroidUIAutomatorNonEmptyNavigator(mockBrowser, [mockContextElement])
     }
 
     def '// selector'() {
@@ -158,14 +149,4 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends Specification {
         0 * _
     }
 
-    private void setupDefaultMocking() {
-        mockBrowser.driver >> mockDriver
-        mockBrowser.navigatorFactory >> mockNavigatorFactory
-
-        Capabilities capabilities = new DesiredCapabilities()
-        capabilities.setCapability('appPackage', 'com.test.app')
-        mockDriver.capabilities >> capabilities
-
-        navigator = new AndroidUIAutomatorNonEmptyNavigator(mockBrowser, [mockContextElement])
-    }
 }
