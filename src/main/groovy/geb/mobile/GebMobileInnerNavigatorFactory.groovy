@@ -7,19 +7,12 @@ import geb.mobile.ios.AppiumIosInstrumentationNonEmptyNavigator
 import geb.mobile.ios.IosInstrumentationNonEmptyNavigator
 import geb.navigator.EmptyNavigator
 import geb.navigator.Navigator
-import geb.navigator.NonEmptyNavigator
 import geb.navigator.factory.InnerNavigatorFactory
 import groovy.util.logging.Slf4j
 import io.appium.java_client.AppiumDriver
-import io.appium.java_client.android.AndroidDriver
-import io.appium.java_client.ios.IOSDriver
-import io.selendroid.SelendroidDriver
-import org.openqa.selenium.Capabilities
 import org.openqa.selenium.Platform
 import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.CapabilityType
-import org.openqa.selenium.remote.DesiredCapabilities
-import org.uiautomation.ios.client.uiamodels.impl.RemoteIOSDriver
 
 /**
  * This Factory decides, which NonEmptyNavigator will be created for the WebElements from the Driver
@@ -90,26 +83,23 @@ class GebMobileInnerNavigatorFactory implements InnerNavigatorFactory {
                 String platformName = driver.capabilities.getCapability("platformName")
                 Platform platform = driver.capabilities.getCapability(CapabilityType.PLATFORM)
                 log.debug("trying to figure out correct Navigator for $browserName, $platformName, ${platform.name()}")
-                if (driver instanceof SelendroidDriver) {
-                    //if (browserName == "android") clazz = NonEmptyNavigator else
+
+                String driverName = driver.class.simpleName
+                if (driverName ==  "SelendroidDriver") {
                     clazz = AndroidInstrumentationNonEmptyNavigator
-                } else if (driver instanceof RemoteIOSDriver) {
+                } else if (driverName == "RemoteIOSDriver") {
                     clazz = IosInstrumentationNonEmptyNavigator
-                } else if (driver instanceof IOSDriver){
+                } else if (driverName == "IOSDriver"){
                     clazz = AppiumIosInstrumentationNonEmptyNavigator
                     navigatorFactory.context = driver.getContext()
-                } else if (driver instanceof AndroidDriver) {
+                } else if (driverName == "AndroidDriver") {
                     navigatorFactory.context = driver.getContext()
-//                    if (browserName.toLowerCase() in ['browser', 'chromium', 'chrome'] ) {
-//                        clazz = AndroidInstrumentationNonEmptyNavigator
-//                    } else {
-//                        clazz = AndroidUIAutomatorNonEmptyNavigator
-//                    }
                       clazz = _defaultNavigators["$NAV_PREFIX:$navigatorFactory.context"]
                 } else {
                     clazz = _defaultNavigators[browserName.toLowerCase()]
                     if (!clazz) clazz = _defaultNavigators[platformName.toLowerCase()]
                 }
+
                 if (clazz) {
                     log.info("Using $clazz.name for $browserName, $platformName, ${platform.name()}")
                     _innerNavigators[browser] = clazz

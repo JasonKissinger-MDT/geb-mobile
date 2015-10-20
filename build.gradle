@@ -73,7 +73,7 @@ dependencies {
     compile "io.selendroid:selendroid-standalone:$selendroidVersion"
     compile "io.selendroid:selendroid-client:$selendroidVersion"
     compile "org.uiautomation:ios-client:$iosClientVersion"
-    compile ("io.appium:java-client:$appiumClientVersion")
+    compile "io.appium:java-client:$appiumClientVersion"
 
     integrationTestCompile group: 'junit', name: 'junit', version: '4.11'
     integrationTestCompile sourceSets.main.output
