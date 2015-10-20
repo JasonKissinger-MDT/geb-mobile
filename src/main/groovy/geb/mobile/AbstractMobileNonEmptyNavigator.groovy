@@ -322,7 +322,7 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
 
     @Override
     String text() {
-        firstElement().text ?: getAttribute("name")
+        firstElement().text
     }
     
     @Override
