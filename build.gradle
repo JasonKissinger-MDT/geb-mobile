@@ -73,7 +73,7 @@ dependencies {
         exclude module: "groovy-all"
     }
 
-    compile 'org.json:json:20150729'
+    compile 'org.json:json:20090211'
     compile "io.selendroid:selendroid-client:$selendroidVersion"
     compile "org.uiautomation:ios-client:$iosClientVersion"
     compile "io.appium:java-client:$appiumClientVersion"
