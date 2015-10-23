@@ -27,7 +27,7 @@ class AndroidHelper {
         else new Actions(driver).sendKeys(SelendroidKeys.BACK).perform()
     }
     void menu() {
-        if( driver instanceof AndroidDriver ) driver.sendKeyEvent(AndroidKeyCode.MENU)
+        if( driver instanceof AndroidDriver ) driver.pressKeyCode(AndroidKeyCode.MENU)
         else new Actions(driver).sendKeys(SelendroidKeys.MENU).perform()
     }
     void home() {
@@ -40,11 +40,11 @@ class AndroidHelper {
      * @param driver
      */
     public static void androidDriverBackButton(AndroidDriver driver){
-        driver.sendKeyEvent(AndroidKeyCode.BACK)
+        driver.pressKeyCode(AndroidKeyCode.BACK)
     }
 
     public static void androidDriverHomeButton(AndroidDriver driver){
-        driver.sendKeyEvent(AndroidKeyCode.HOME)
+        driver.pressKeyCode(AndroidKeyCode.HOME)
     }
 
     public String getMessage(){

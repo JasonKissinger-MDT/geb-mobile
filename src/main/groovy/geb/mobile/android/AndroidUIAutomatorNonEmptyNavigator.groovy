@@ -7,6 +7,7 @@ import groovy.util.logging.Slf4j
 import io.appium.java_client.MobileBy
 import io.appium.java_client.MobileElement
 import io.appium.java_client.android.AndroidDriver
+import io.appium.java_client.android.AndroidElement
 import org.openqa.selenium.By
 import org.openqa.selenium.UnsupportedCommandException
 import org.openqa.selenium.WebElement
@@ -129,9 +130,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 input.click()
             }
         } else {
-            // added back input clear because it is still needed until replaceValue is available https://github.com/appium/java-client/pull/235
-            input.clear()
-            input.sendKeys value as String
+            (AndroidElement)input.replaceValue(value as String)
 
             try{
                 driver.hideKeyboard()

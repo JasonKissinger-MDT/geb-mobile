@@ -5,6 +5,8 @@ import groovy.util.logging.Slf4j
 import org.junit.rules.MethodRule
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
+import org.openqa.selenium.TakesScreenshot
+import org.openqa.selenium.WebDriver
 
 import javax.imageio.ImageIO
 
@@ -12,12 +14,12 @@ import javax.imageio.ImageIO
  * Add the screenshots dir to the jenkins archive artifacts post build plugin
  */
 @Slf4j
-class GebMobileScreenshotRule implements MethodRule{
+class GebMobileScreenshotRule implements MethodRule {
 
-    public File getSnapshotDir(){
-        def dir = new File( getJenkinsWorkspace()?: '.', 'screenshots' )
+    public File getSnapshotDir() {
+        def dir = new File(getJenkinsWorkspace() ?: '.', 'screenshots')
 
-        if( !dir.exists() ){
+        if (!dir.exists()) {
             dir.mkdirs()
         }
 
@@ -65,7 +67,7 @@ class GebMobileScreenshotRule implements MethodRule{
         }
 
         String url = getArtifactURL() + (file.absolutePath - ws.absolutePath)
-        url = url.replace('\\','/')
+        url = url.replace('\\', '/')
 
         log.debug("URL in build ${getBuildNumber()} to archived file: $file --> $url")
         return url
@@ -75,36 +77,43 @@ class GebMobileScreenshotRule implements MethodRule{
     public GebMobileBaseSpec baseSpec
 
     @Override
-    Statement apply(Statement base, FrameworkMethod method, Object target){
+    Statement apply(Statement base, FrameworkMethod method, Object target) {
 
         return new Statement() {
             @Override
             void evaluate() throws Throwable {
                 try {
                     base.evaluate()
-                }catch(Throwable ex){
-                    if( baseSpec ) {
-                        log.warn("Caugth $ex.message --> take screenshot")
-                        def img = baseSpec.getScreenShotAsImage()
-                        def fName = method.getName().replaceAll(/[ ,\._\-:]/, "_")
-                        def snapDir = getSnapshotDir()
-                        try {
-                            def pngFile = new File( snapDir, fName+ '.png')
-                            ImageIO.write(img, "png", pngFile)
-                            log.warn("SnapShot is accessibly after end of build on: ${getRefUrlToArchivedFileInBuild(pngFile)}")
-                        } catch (e1) {
-                            log.warn "error writing image: $e1.message"
-                        }
-                        def xmlFile = new File( snapDir, fName+'_pageSource.xml' )
-                        try{
-                            xmlFile.withWriter { wr->
-                                wr.write(baseSpec.getDriver().getPageSource())
+                } catch (Throwable ex) {
+
+                    if (baseSpec) {
+                        WebDriver driver = baseSpec.driver
+                        def snapDir = snapshotDir
+                        def fName = method.name.replaceAll(/[ ,\._\-:]/, "_")
+
+                        if (driver instanceof TakesScreenshot) {
+                            log.warn("Caught $ex.message --> take screenshot")
+                            def img = baseSpec.screenShotAsImage
+                            try {
+                                def pngFile = new File(snapDir, fName + '.png')
+                                ImageIO.write(img, "png", pngFile)
+                                log.warn("Saved screen shot: ${getRefUrlToArchivedFileInBuild(pngFile)}")
+                            } catch (e) {
+                                log.warn "error writing image: $e.message"
                             }
-                            log.warn("SnapShot is accessibly after end of build on: ${getRefUrlToArchivedFileInBuild(xmlFile)}")
-                        }catch(e){
+                        }
+
+                        def xmlFile = new File(snapDir, fName + '_pageSource.xml')
+                        try {
+                            xmlFile.withWriter { wr ->
+                                wr.write(driver.pageSource)
+                            }
+                            log.warn("Saved page source: ${getRefUrlToArchivedFileInBuild(xmlFile)}")
+                        } catch (e) {
                             log.warn("problem creating pageSource: $e.message")
                         }
                     }
+
                     throw ex
                 }
             }
