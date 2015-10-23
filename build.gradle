@@ -19,11 +19,11 @@ apply plugin: 'maven-publish'
 group = 'geb.mobile'
 version = new ProjectVersion(1, 0, System.env.BUILD_NUMBER)
 ext.gebVersion = '0.10.0'
-ext.seleniumVersion = '2.45.0'
+ext.seleniumVersion = '2.47.1'
 ext.spockVersion = '1.0-groovy-2.3'
 ext.groovyVersion = '2.3.10'
 ext.selendroidVersion = '0.11.0'
-ext.appiumClientVersion = '2.2.0'
+ext.appiumClientVersion = '3.2.0'
 ext.iosClientVersion =  '0.6+'
 
 repositories {
@@ -41,16 +41,8 @@ sourceSets {
 configurations {
     selendroid
     iosdriver
-}
-
-idea {
-    module {
-        sourceDirs -= file('src/main/java')
-        testSourceDirs -= file('src/test/java')
-
-        testSourceDirs += file('src/integrationTest/groovy')
-        testSourceDirs += file('src/integrationTest/resources')
-    }
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
 }
 
 dependencies {
@@ -59,6 +51,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:1.7.6"
     compile 'ch.qos.logback:logback-classic:1.1.2'
     compile "org.seleniumhq.selenium:selenium-java:$seleniumVersion"
+    compile group: 'junit', name: 'junit', version: '4.11'
 
     compile("org.gebish:geb-spock:$gebVersion") {
         exclude module: "groovy"
@@ -84,6 +77,45 @@ dependencies {
     selendroid "io.selendroid:selendroid-standalone:${selendroidVersion}"
 
     iosdriver "org.uiautomation:ios-server:0.6+"
+}
+
+idea {
+    module {
+        inheritOutputDirs = false
+        outputDir = file('build/classes/main')
+        testOutputDir = file('build/classes/test')
+
+        sourceDirs -= file('src/main/java')
+        testSourceDirs -= file('src/test/java')
+
+        testSourceDirs += file('src/integrationTest/groovy')
+        testSourceDirs += file('src/integrationTest/resources')
+
+        // This ended up causing issues when using the gradlew ideaModule approach vs. built in IntelliJ support
+        // scopes.TEST.plus += [configurations.integrationTestCompile, configurations.integrationTestRuntime]
+
+        // work around for gradle plugin being behind for IntelliJ 14
+        iml.withXml {
+            def resources = ['file://$MODULE_DIR$/src/main/resources']
+            def testResources = ['file://$MODULE_DIR$/src/test/resources', 'file://$MODULE_DIR$/src/integrationTest/resources']
+
+            it.asNode().component.content.sourceFolder?.each {
+                def resourceType = null
+
+                if (it.@url in resources) {
+                    resourceType = 'java-resource'
+                } else if (it.@url in testResources) {
+                    resourceType = 'java-test-resource'
+                }
+
+                if (resourceType) {
+                    def attributes = it.attributes()
+                    attributes.remove('isTestSource')
+                    attributes.put('type', resourceType)
+                }
+            }
+        }
+    }
 }
 
 def startServer = { server, command ->
@@ -125,7 +157,7 @@ def stopServer = { server ->
 
 task startSelendroid(group:'Server', type: Task) << {
     description 'Start the selendroid server on port 4444 with the testapp, use -DwaitForServer=true, when you run only the server'
-    startServer( "SERVER_SELENDROID" , "java -cp ${configurations.selendroid.files.toList().join(":")} io.selendroid.SelendroidLauncher -port 4444 -aut ${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk")
+    startServer( "SERVER_SELENDROID" , "java -cp ${configurations.selendroid.files.toList().join(":")} io.selendroid.SelendroidLauncher -port 4444 -aut ${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk")
 }
 
 task startSelendroidForWeb(group:'Server') << {
@@ -148,7 +180,7 @@ task stopServers(group:'Server') << {
 
 task runSelendroidTests(group:'Android',type: Test, dependsOn: [startSelendroid]) {
     systemProperties.put "framework", "selendroid"
-    systemProperties.put "appUT_absolutePath", "${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appUT_absolutePath", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
     systemProperties.put "appUT.version", "0.10.0"
     systemProperties.put "appUT_cap_Emulator", "false"
@@ -159,7 +191,7 @@ task runAppiumTests(group:'Android',type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
 
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
     systemProperties.put "appium_deviceName" , "Android"
     //To run the test on a specific device
     //System.setProperty("appium_udid","192.168.56.10:5555")
@@ -172,7 +204,7 @@ task runAppiumTests(group:'Android',type: Test, dependsOn: [startAppium]) {
 task runAppiumTestsWithSelendroidDriver(group:'Android', type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
     systemProperties.put "appium_automationName", "selendroid"
 
     include '**/GebMobileAutomationTestWithPagesSpec.*'
@@ -181,7 +213,7 @@ task runAppiumTestsWithSelendroidDriver(group:'Android', type: Test, dependsOn: 
 task runAppiumTestsWithOldDevice(group:'Android', type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/test/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
 
     include '**/GebMobileAutomationTestWithPagesSpec.*'
 }
