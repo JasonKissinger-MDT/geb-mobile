@@ -43,6 +43,15 @@ configurations {
     iosdriver
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime
+
+    configurations {
+        all*.exclude module: 'selenium-chrome-driver'
+        all*.exclude module: 'selenium-edge-driver'
+        all*.exclude module: 'selenium-htmlunit-driver'
+        all*.exclude module: 'selenium-firefox-driver'
+        all*.exclude module: 'selenium-ie-driver'
+        all*.exclude module: 'selenium-safari-driver'
+    }
 }
 
 dependencies {
@@ -52,6 +61,7 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:1.1.2'
     compile "org.seleniumhq.selenium:selenium-java:$seleniumVersion"
     compile group: 'junit', name: 'junit', version: '4.11'
+
 
     compile("org.gebish:geb-spock:$gebVersion") {
         exclude module: "groovy"
@@ -63,7 +73,7 @@ dependencies {
         exclude module: "groovy-all"
     }
 
-    compile "io.selendroid:selendroid-standalone:$selendroidVersion"
+    compile 'org.json:json:20150729'
     compile "io.selendroid:selendroid-client:$selendroidVersion"
     compile "org.uiautomation:ios-client:$iosClientVersion"
     compile "io.appium:java-client:$appiumClientVersion"
