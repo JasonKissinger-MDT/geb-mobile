@@ -1,13 +1,11 @@
 package geb.mobile.driver
 
 import groovy.util.logging.Slf4j
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
 import io.selendroid.SelendroidCapabilities
 import io.selendroid.SelendroidDriver
 import org.openqa.selenium.Platform
-import org.openqa.selenium.firefox.FirefoxDriver
 import org.openqa.selenium.remote.DesiredCapabilities
 import org.openqa.selenium.remote.LocalFileDetector
 import org.openqa.selenium.remote.RemoteWebDriver
