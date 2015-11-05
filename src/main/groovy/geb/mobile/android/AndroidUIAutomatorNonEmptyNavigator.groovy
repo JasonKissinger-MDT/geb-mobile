@@ -28,6 +28,12 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
     @Override
     Navigator find(String selectorString) {
+        String oldSelectorString = "";
+        if (selectorString.startsWith("--")) {
+            oldSelectorString = selectorString
+            selectorString = selectorString.subSequence(2, selectorString.length())
+        }
+
         By by = getByForSelector(selectorString)
 
         List<WebElement> list = []
@@ -35,6 +41,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
         if (!contextElements || (by instanceof By.ByXPath)) {
             List<WebElement> found = driver.findElements(by)
             found && list.addAll(found)
+        } else if (oldSelectorString.startsWith("--")) {
+            list = driver.findElements(by)
         } else {
             contextElements?.each { WebElement element ->
                 List<WebElement> found = element.findElements(by)
