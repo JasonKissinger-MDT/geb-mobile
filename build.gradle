@@ -285,7 +285,7 @@ task appiumOnSauceLabs(type: Test) {
 task uploadApk2Saucelabs(){
     def appFile = new File("${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk")
     inputs.file appFile
-    outputs.upToDateWhen { true }
+    outputs.upToDateWhen { false }
 
     doLast {
         String sauceStorageUrl = "https://${sauceLabsUser}:${sauceLabsKey}@saucelabs.com/rest/v1/storage/${sauceLabsUser}/selendroid-test-app-0.9.0.apk?overwrite=true"
