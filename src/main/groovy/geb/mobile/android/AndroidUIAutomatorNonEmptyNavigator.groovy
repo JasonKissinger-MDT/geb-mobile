@@ -138,8 +138,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                 input.click()
             }
         } else {
-            input.clear()
-            input.sendKeys value as String
+            (AndroidElement)input.replaceValue(value as String)
+
             try{
                 driver.hideKeyboard()
             }catch(e){
