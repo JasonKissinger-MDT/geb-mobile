@@ -89,7 +89,8 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
             String value = selectorString.substring(1)
             by = MobileBy.className(value);
         } else {
-            by = MobileBy.AndroidUIAutomator(selectorString?.replaceAll("'", '\"'))
+            selectorString = selectorString?.replaceAll("\\\\'", 'QUOTE_HOLDER')?.replaceAll("'", '\"')
+            by = MobileBy.AndroidUIAutomator(selectorString.replaceAll("QUOTE_HOLDER", "\'"))
         }
 
         log.debug "Using $by selector"
