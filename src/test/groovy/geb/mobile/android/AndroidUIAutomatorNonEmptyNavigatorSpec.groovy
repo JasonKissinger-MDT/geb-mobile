@@ -83,6 +83,20 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         0 * _
     }
 
+    def 'ByAndroidUIAutomator with single quote'() {
+        given:
+        String selector = "text('It\\'s working!')"
+
+        when:
+        navigator.find(selector)
+
+        then:
+        interaction { setupDefaultMocking() }
+        1 * mockContextElement.findElements(MobileBy.AndroidUIAutomator("text(\"It's working!\")")) >> [mockFoundElement]
+        1 * mockNavigatorFactory.createFromWebElements([mockFoundElement])
+        0 * _
+    }
+
     def 'not found - not ByAndroidUIAutomator' () {
         given:
         String selector = '.android.widget.TextView'
