@@ -97,7 +97,7 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         0 * _
     }
 
-    def 'not found - not ByAndroidUIAutomator' () {
+    def 'not found - not ByAndroidUIAutomator'() {
         given:
         String selector = '.android.widget.TextView'
 
@@ -111,7 +111,7 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         0 * _
     }
 
-    def 'not found - ByAndroidUIAutomator - no scrollable' () {
+    def 'not found - ByAndroidUIAutomator - no scrollable'() {
         given:
         String selector = 'new UiSelector().clickable(true)'
 
@@ -126,7 +126,7 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         0 * _
     }
 
-    def 'not found - ByAndroidUIAutomator - has scrollable' () {
+    def 'not found - ByAndroidUIAutomator - has scrollable'() {
         given:
         MobileElement mockMobileScrollable = Mock(MobileElement)
         String selector = 'new UiSelector().clickable(true)'
@@ -143,7 +143,7 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         0 * _
     }
 
-    def 'multiple elements in context' () {
+    def 'multiple elements in context'() {
         given:
         MobileElement mockContextElement2 = Mock(MobileElement)
         MobileElement mockFoundElement2 = Mock(MobileElement)
@@ -160,6 +160,34 @@ class AndroidUIAutomatorNonEmptyNavigatorSpec extends BaseMobileNonEmptyNavigato
         1 * mockContextElement.findElements(MobileBy.AndroidUIAutomator(selector)) >> [mockFoundElement]
         1 * mockContextElement2.findElements(MobileBy.AndroidUIAutomator(selector)) >> [mockFoundElement2]
         1 * mockNavigatorFactory.createFromWebElements([mockFoundElement, mockFoundElement2])
+        0 * _
+    }
+
+    def 'skip scrollable - found'() {
+        given:
+        String selector = '--#com.test.different.app:id/id'
+
+        when:
+        navigator.find(selector)
+
+        then:
+        interaction { setupDefaultMocking() }
+        1 * mockContextElement.findElements(MobileBy.AndroidUIAutomator('resourceId("com.test.different.app:id/id")')) >> [mockFoundElement]
+        1 * mockNavigatorFactory.createFromWebElements([mockFoundElement])
+        0 * _
+    }
+
+    def 'skip scrollable - not found does not scroll'() {
+        given:
+        String selector = '--#com.test.different.app:id/id'
+
+        when:
+        navigator.find(selector)
+
+        then:
+        interaction { setupDefaultMocking() }
+        1 * mockContextElement.findElements(MobileBy.AndroidUIAutomator('resourceId("com.test.different.app:id/id")')) >> []
+        1 * mockNavigatorFactory.createFromWebElements([])
         0 * _
     }
 
