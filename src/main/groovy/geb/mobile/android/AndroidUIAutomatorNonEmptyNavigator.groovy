@@ -18,6 +18,8 @@ import org.openqa.selenium.WebElement
 @Slf4j
 class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigator<AndroidDriver> {
 
+    public static final String SKIP_SCROLLING_INDICATOR = "--"
+
     AndroidUIAutomatorNonEmptyNavigator(Browser browser, Collection<? extends MobileElement> contextElements) {
         super(browser,contextElements)
     }
@@ -28,10 +30,9 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
 
     @Override
     Navigator find(String selectorString) {
-        String oldSelectorString = "";
-        if (selectorString.startsWith("--")) {
-            oldSelectorString = selectorString
-            selectorString = selectorString.subSequence(2, selectorString.length())
+        boolean skipScrolling = selectorString.startsWith(SKIP_SCROLLING_INDICATOR)
+        if (skipScrolling) {
+            selectorString = selectorString.subSequence(SKIP_SCROLLING_INDICATOR.size(), selectorString.length())
         }
 
         By by = getByForSelector(selectorString)
@@ -41,13 +42,11 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
         if (!contextElements || (by instanceof By.ByXPath)) {
             List<WebElement> found = driver.findElements(by)
             found && list.addAll(found)
-        } else if (oldSelectorString.startsWith("--")) {
-            list = driver.findElements(by)
         } else {
             contextElements?.each { WebElement element ->
                 List<WebElement> found = element.findElements(by)
 
-                if (!found && by instanceof MobileBy.ByAndroidUIAutomator) {
+                if (!skipScrolling && !found && by instanceof MobileBy.ByAndroidUIAutomator) {
                     // This is a temporary workaround for https://github.com/appium/appium/issues/5721
                     List<WebElement> scrollable = driver.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
 
