@@ -74,7 +74,7 @@ class GebMobileDriverFactory {
             if (capa.getCapability("platformName") == "Android") {
                 capa.setCapability("platform", Platform.ANDROID)
                 if( appPackage() ) capa.setCapability("appPackage", appPackage())
-                if (!capa.getCapability("deviceName")) capa.setCapability("deviceName", "Android");
+                if (!capa.getCapability("deviceName")) capa.setCapability("deviceName", "Android Emulator");
 
                 if (capa.getCapability("automationName") == "selendroid") {
                     log.info("Create SelendroidDriver for Appium, cause AutomationName is set to selendroid")

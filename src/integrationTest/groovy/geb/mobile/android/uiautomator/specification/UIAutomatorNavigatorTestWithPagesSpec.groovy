@@ -17,7 +17,7 @@ class UIAutomatorNavigatorTestWithPagesSpec extends GebMobileBaseSpec {
     static{
         System.setProperty("appUT.package","io.selendroid.testapp")
         //System.setProperty("appium_app", new File(ClassLoader.getSystemResource("testapk/selendroid-test-app-0.9.0.apk").toURI()).absolutePath)
-        System.setProperty("appium_deviceName" , "Android")
+        System.setProperty("appium_deviceName" , "Android Emulator")
         //To run the test on a specific device
         //System.setProperty("appium_udid","<your device id from 'adb devices'> ")
         //Use Appium
