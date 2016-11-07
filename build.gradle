@@ -17,13 +17,13 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
 group = 'geb.mobile'
-version = new ProjectVersion(1, 0, System.env.BUILD_NUMBER)
+version = new ProjectVersion(2, 0, System.env.BUILD_NUMBER)
 ext.gebVersion = '0.10.0'
 ext.seleniumVersion = '2.47.1'
 ext.spockVersion = '1.0-groovy-2.3'
 ext.groovyVersion = '2.3.10'
 ext.selendroidVersion = '0.11.0'
-ext.appiumClientVersion = '3.2.0'
+ext.appiumClientVersion = '4.1.2'
 ext.iosClientVersion =  '0.6+'
 
 repositories {
@@ -167,7 +167,7 @@ def stopServer = { server ->
 
 task startSelendroid(group:'Server', type: Task) << {
     description 'Start the selendroid server on port 4444 with the testapp, use -DwaitForServer=true, when you run only the server'
-    startServer( "SERVER_SELENDROID" , "java -cp ${configurations.selendroid.files.toList().join(":")} io.selendroid.SelendroidLauncher -port 4444 -aut ${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk")
+    startServer( "SERVER_SELENDROID" , "java -cp ${configurations.selendroid.files.toList().join(":")} io.selendroid.SelendroidLauncher -port 4444 -aut ${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk")
 }
 
 task startSelendroidForWeb(group:'Server') << {
@@ -190,7 +190,7 @@ task stopServers(group:'Server') << {
 
 task runSelendroidTests(group:'Android',type: Test, dependsOn: [startSelendroid]) {
     systemProperties.put "framework", "selendroid"
-    systemProperties.put "appUT_absolutePath", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appUT_absolutePath", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
     systemProperties.put "appUT.version", "0.10.0"
     systemProperties.put "appUT_cap_Emulator", "false"
@@ -201,7 +201,7 @@ task runAppiumTests(group:'Android',type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
 
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk"
     systemProperties.put "appium_deviceName" , "Android Emulator"
     //To run the test on a specific device
     //System.setProperty("appium_udid","192.168.56.10:5555")
@@ -214,7 +214,7 @@ task runAppiumTests(group:'Android',type: Test, dependsOn: [startAppium]) {
 task runAppiumTestsWithSelendroidDriver(group:'Android', type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk"
     systemProperties.put "appium_automationName", "selendroid"
 
     include '**/GebMobileAutomationTestWithPagesSpec.*'
@@ -223,7 +223,7 @@ task runAppiumTestsWithSelendroidDriver(group:'Android', type: Test, dependsOn: 
 task runAppiumTestsWithOldDevice(group:'Android', type: Test, dependsOn: [startAppium]) {
     systemProperties.put "framework", "appium"
     systemProperties.put "appUT.package", "io.selendroid.testapp"
-    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk"
+    systemProperties.put "appium_app", "${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk"
 
     include '**/GebMobileAutomationTestWithPagesSpec.*'
 }
@@ -272,23 +272,23 @@ ext.saucelabsUrl  = "http://${sauceLabsUser}:${sauceLabsKey}@ondemand.saucelabs.
 
 task appiumOnSauceLabs(type: Test) {
     systemProperty "framework","appium"
-    systemProperty "appium_app","sauce-storage:selendroid-test-app-0.9.0.apk"
+    systemProperty "appium_app","sauce-storage:selendroid-test-app-0.17.0.apk"
     systemProperty "appium_appPackage" , "io.selendroid.testapp"
     systemProperty "selenium.url", saucelabsUrl
     systemProperty "appium_platformName","Android"
-    systemProperty "appium_deviceName","LG Nexus 4 Emulator"
-    systemProperty "appium_platformVersion","4.4"
-    systemProperty "appium_appium-version","1.4.16"
+    systemProperty "appium_deviceName","Android Emulator"
+    systemProperty "appium_platformVersion","5.1"
+    systemProperty "appium_appiumVersion","1.5.3"
     include '**/UIAutomatorNavigatorTestWithPagesSpec.*'
 }
 
 task uploadApk2Saucelabs(){
-    def appFile = new File("${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.9.0.apk")
+    def appFile = new File("${projectDir}/src/integrationTest/resources/testapk/selendroid-test-app-0.17.0.apk")
     inputs.file appFile
     outputs.upToDateWhen { false }
 
     doLast {
-        String sauceStorageUrl = "https://${sauceLabsUser}:${sauceLabsKey}@saucelabs.com/rest/v1/storage/${sauceLabsUser}/selendroid-test-app-0.9.0.apk?overwrite=true"
+        String sauceStorageUrl = "https://${sauceLabsUser}:${sauceLabsKey}@saucelabs.com/rest/v1/storage/${sauceLabsUser}/selendroid-test-app-0.17.0.apk?overwrite=true"
         logger.lifecycle "Uploading apk to sauce storage at: ${sauceStorageUrl}"
         def sauceStorage = new HTTPBuilder(sauceStorageUrl)
         sauceStorage.handler.failure = { resp ->
