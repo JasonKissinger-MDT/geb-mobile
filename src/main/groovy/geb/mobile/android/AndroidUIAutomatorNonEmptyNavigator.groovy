@@ -51,7 +51,7 @@ class AndroidUIAutomatorNonEmptyNavigator extends AbstractMobileNonEmptyNavigato
                     List<WebElement> scrollable = driver.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
 
                     if (scrollable) {
-                        By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.automatorText})")
+                        By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.locatorString})")
                         log.debug "Not found with selector $by attempting to scroll into view using $scrolledBy"
 
                         try {
