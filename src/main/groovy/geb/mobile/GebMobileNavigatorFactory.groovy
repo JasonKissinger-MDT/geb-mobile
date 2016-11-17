@@ -1,15 +1,14 @@
 package geb.mobile
-
 import geb.Browser
+import geb.mobile.android.AndroidBasicLocator
+import geb.mobile.android.AndroidDefaultLocator
+import geb.navigator.Locator
 import geb.navigator.Navigator
 import geb.navigator.factory.NavigatorBackedNavigatorFactory
 import geb.navigator.factory.NavigatorFactory
 import groovy.util.logging.Slf4j
-import io.appium.java_client.FindsByAndroidUIAutomator
-import io.appium.java_client.MobileElement
-import io.appium.java_client.android.AndroidDriver
+import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
-
 /**
  * Created by gmueksch on 23.06.14.
  */
@@ -18,6 +17,7 @@ class GebMobileNavigatorFactory implements NavigatorFactory {
 
     private final Browser browser
     private final GebMobileInnerNavigatorFactory innerNavigatorFactory
+    final Locator locator
 
     String context
 
@@ -29,20 +29,17 @@ class GebMobileNavigatorFactory implements NavigatorFactory {
         this.browser = browser
         this.innerNavigatorFactory = innerNavigatorFactory
         this.innerNavigatorFactory.navigatorFactory = this
+        locator = new AndroidDefaultLocator(new AndroidBasicLocator([browser.driver], this, browser.driver), browser.driver)
     }
 
     @Override
     Navigator getBase() {
-        List<WebElement> list
+        def baseNavigatorWaiting = browser.config.baseNavigatorWaiting
+        baseNavigatorWaiting ? baseNavigatorWaiting.waitFor { createBase() } : createBase()
+    }
 
-        if (browser.driver instanceof AndroidDriver) {
-            // The base element should be the top element in the hierarchy
-            list = Arrays.asList(new AndroidRootElement(browser.driver))
-        } else {
-            list = browser.driver.findElementsByXPath("//*") as List
-        }
-
-        createFromWebElements(list)
+    protected Navigator createBase() {
+        createFromWebElements(Collections.singletonList(browser.driver.findElement(By.xpath("//*"))))
     }
 
     protected Browser getBrowser() {
@@ -72,23 +69,4 @@ class GebMobileNavigatorFactory implements NavigatorFactory {
     NavigatorFactory relativeTo(Navigator newBase) {
         new NavigatorBackedNavigatorFactory(newBase, innerNavigatorFactory)
     }
-
-    private class AndroidRootElement extends MobileElement implements FindsByAndroidUIAutomator {
-        AndroidDriver driver
-
-        AndroidRootElement(AndroidDriver driver) {
-            this.driver = driver
-        }
-
-        @Override
-        public WebElement findElementByAndroidUIAutomator(String using) {
-            driver.findElementByAndroidUIAutomator(using);
-        }
-
-        @Override
-        public List<WebElement> findElementsByAndroidUIAutomator(String using) {
-            driver.findElementsByAndroidUIAutomator(using);
-        }
-    }
-
 }

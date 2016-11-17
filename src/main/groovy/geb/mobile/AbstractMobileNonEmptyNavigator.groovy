@@ -1,14 +1,10 @@
 package geb.mobile
-
 import geb.Browser
 import geb.Page
 import geb.error.UndefinedAtCheckerException
 import geb.error.UnexpectedPageException
-import geb.navigator.AbstractNavigator
-import geb.navigator.CssSelector
-import geb.navigator.EmptyNavigator
-import geb.navigator.Navigator
-import geb.navigator.SelectFactory
+import geb.mobile.android.AndroidBasicLocator
+import geb.navigator.*
 import geb.textmatching.TextMatcher
 import geb.waiting.Wait
 import geb.waiting.WaitTimeoutException
@@ -20,12 +16,11 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException
 import java.util.regex.Pattern
 
 import static java.util.Collections.EMPTY_LIST
-
 /**
  * Created by gmueksch on 23.06.14.
  */
 @Slf4j
-abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
+abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractMobileNavigator {
 
     protected final List<WebElement> contextElements
 
@@ -34,7 +29,7 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     T driver
 
     AbstractMobileNonEmptyNavigator(Browser browser, Collection<? extends WebElement> contextElements) {
-        super(browser)
+        super(browser, new AndroidBasicLocator(contextElements.asImmutable(), browser.navigatorFactory, browser.driver))
         this.contextElements = contextElements.toList().asImmutable()
         this.driver = (T)browser.driver
     }
@@ -53,16 +48,6 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
 
     public String getPropsByName(name){
         getProps()[name]
-    }
-
-    @Override
-    Navigator find(Map<String, Object> predicates, String selector) {
-        selector = optimizeSelector(selector, predicates)
-        if (selector) {
-            find(selector).filter(predicates)
-        } else {
-            find(predicates)
-        }
     }
 
     @Override
@@ -392,10 +377,30 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     }
 
     @Override
-    Navigator click(List<Class<? extends Page>> potentialPageClasses) {
+    Navigator click(List potentialPages) {
         click()
-        browser.page(*potentialPageClasses)
+        browser.page(*potentialPages)
         this
+    }
+
+    @Override
+    Navigator click(Page pageInstance, Wait wait) {
+        return null
+    }
+
+    @Override
+    Navigator click(List potentialPages, Wait wait) {
+        return null
+    }
+
+    @Override
+    Navigator click(Class<? extends Page> pageClass, Wait wait) {
+        return null
+    }
+
+    @Override
+    Navigator click(Page pageInstance) {
+        return null
     }
 
     @Override
@@ -478,28 +483,6 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
         } else {
             throw new MissingPropertyException(name, getClass())
         }
-    }
-
-    /**
-     * Optimizes the selector if the predicates contains `class` or `id` keys that map to strings. Note this method has
-     * a side-effect in that it _removes_ those keys from the predicates map.
-     */
-    protected String optimizeSelector(String selector, Map<String, Object> predicates) {
-        if (!selector) {
-            return selector
-        }
-
-        def buffer = new StringBuilder(selector)
-        if (predicates.containsKey("id") && predicates["id"] in String) {
-            buffer << "#" << CssSelector.escape(predicates.remove("id"))
-        }
-        if (predicates.containsKey("class") && predicates["class"] in String) {
-            predicates.remove("class").split(/\s+/).each { className ->
-                buffer << "." << CssSelector.escape(className)
-            }
-        }
-        if (buffer[0] == "*" && buffer.length() > 1) buffer.deleteCharAt(0)
-        return buffer.toString()
     }
 
     protected boolean matches(WebElement element, Map<String, Object> predicates) {
@@ -671,32 +654,6 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
         index == -1 ? elements : elements[0..<index]
     }
 
-    @Override
-    boolean isDisabled() {
-        def dis =  getAttribute('disabled')
-        if( dis == null ){
-            dis = !getAttribute('enabled')
-        }
-        return dis
-    }
-
-    @Override
-    boolean isEnabled() {
-        def ena = getAttribute('enabled')
-        return ena!=null? Boolean.valueOf(ena): Boolean.valueOf(getAttribute('disabled'))
-    }
-
-    @Override
-    boolean isReadOnly() {
-        return false
-    }
-
-    @Override
-    boolean isEditable() {
-        return true
-    }
-
-
     // TODO:  new geb 0.10.0 methods... do we need to implement?
 
     @Override
@@ -820,12 +777,7 @@ abstract class AbstractMobileNonEmptyNavigator<T> extends AbstractNavigator {
     }
 
     @Override
-    Navigator click(Class<? extends Page> pageClass, Wait wait) {
-        return null
-    }
-
-    @Override
-    Navigator click(List<Class<? extends Page>> potentialPageClasses, Wait wait) {
-        return null
+    boolean isFocused() {
+        firstElement().equals(browser.driver.switchTo().activeElement())
     }
 }

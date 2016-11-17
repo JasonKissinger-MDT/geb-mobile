@@ -1,16 +1,12 @@
 package geb.mobile.ios
-
 import geb.Browser
 import geb.mobile.AbstractMobileNonEmptyNavigator
 import geb.navigator.EmptyNavigator
 import geb.navigator.Navigator
-import geb.navigator.SelectFactory
 import groovy.util.logging.Slf4j
-import io.appium.java_client.AppiumDriver
 import io.appium.java_client.ios.IOSDriver
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
-
 /**
  * Created by gmueksch on 23.06.14.
  */
@@ -104,12 +100,6 @@ class AppiumIosInstrumentationNonEmptyNavigator extends AbstractMobileNonEmptyNa
 
     protected getValue(WebElement input) {
         input?.getAttribute("value")
-    }
-
-
-    @Override
-    boolean isEnabled() {
-        return firstElement().enabled
     }
 
     @Override
