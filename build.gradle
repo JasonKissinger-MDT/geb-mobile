@@ -18,7 +18,7 @@ apply plugin: 'maven-publish'
 
 group = 'geb.mobile'
 version = new ProjectVersion(2, 0, System.env.BUILD_NUMBER)
-ext.gebVersion = '0.10.0'
+ext.gebVersion = '1.0'
 ext.seleniumVersion = '2.47.1'
 ext.spockVersion = '1.0-groovy-2.3'
 ext.groovyVersion = '2.3.10'
@@ -87,6 +87,8 @@ dependencies {
     selendroid "io.selendroid:selendroid-standalone:${selendroidVersion}"
 
     iosdriver "org.uiautomation:ios-server:0.6+"
+
+    compile 'org.objenesis:objenesis:1.4'
 }
 
 idea {
