@@ -19,7 +19,7 @@ apply plugin: 'maven-publish'
 group = 'geb.mobile'
 version = new ProjectVersion(2, 0, System.env.BUILD_NUMBER)
 ext.gebVersion = '1.0'
-ext.seleniumVersion = '2.47.1'
+ext.seleniumVersion = '3.0.0'
 ext.spockVersion = '1.0-groovy-2.3'
 ext.groovyVersion = '2.3.10'
 ext.selendroidVersion = '0.11.0'
