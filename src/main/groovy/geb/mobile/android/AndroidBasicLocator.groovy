@@ -31,8 +31,14 @@ class AndroidBasicLocator extends SearchContextBasedBasicLocator {
             List<WebElement> found = searchContext.findElements(by)
 
             if (!found && by instanceof ByAndroidUIAutomatorSkipScrolling && !by.skipScrolling) {
-                // This is a temporary workaround for https://github.com/appium/appium/issues/5721
-                def scrollable = find(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
+                // check the current context to see if it's scrollable
+                By scrollableBy = MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)")
+                def scrollable = find(scrollableBy)
+
+                if (!scrollable) {
+                    // current context isn't scrollable, let's try the whole page/screen
+                    scrollable = this.driver.findElements(scrollableBy)
+                }
 
                 if (scrollable) {
                     By scrolledBy = MobileBy.AndroidUIAutomator("new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(${by.locatorString})")
