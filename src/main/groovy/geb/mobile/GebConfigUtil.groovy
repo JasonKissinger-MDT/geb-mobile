@@ -37,24 +37,24 @@ class GebConfigUtil {
         appium
     }
 
-    /**
-     * Attempts to unlock a mobile device screen by first swiping and then entering in a password if it's still locked.
-     * Password is set/read from the <b>'device.password'</b> system environment variable.
-     *
-     * Code is needed because Appium will unlock a screen without a password, but not one with.
-     */
+/**
+ * Attempts to unlock a mobile device screen by first swiping and then entering in a password if it's still locked.
+ * Password is set/read from the <b>'device.password'</b> system environment variable.
+ *
+ * Code is needed because Appium will unlock a screen without a password, but not one with.
+ */
     static void unlockDevice(){
         // appium enhancement issue to unlock with password: https://github.com/appium/appium/issues/5755
 
-        if(isScreenLocked()){
-            println("Screen is locked.  Attempting to swipe to unlock.")
+        if(isInteractive()){
+            println("Screen is not interactive.  Attempting to swipe to unlock.")
             executeAdbCommand("shell input keyevent KEYCODE_WAKEUP")
             Thread.sleep(1 * 1000)
             executeAdbCommand("shell input swipe 200 400 200 0")
             Thread.sleep(1 * 1000)
 
-            if(isScreenLocked()){
-                println("Screen is still locked.  Attempting to enter password to unlock.")
+            if(isInteractive()){
+                println("Screen is still not interactive.  Attempting to enter password to unlock.")
                 // turn off screen first as some will automatically turn off in the middle of the code below due to the timeout from the above wake up
                 executeAdbCommand("shell input keyevent 26")
                 Thread.sleep(1 * 1000)
@@ -72,50 +72,25 @@ class GebConfigUtil {
 
                 // hit enter
                 executeAdbCommand("shell input keyevent 66")
-                if(isScreenLocked()){
-                    println("Screen is still locked!?  Maybe the password '${devicePassword}' tried is wrong?\n" +
+                if(isInteractive()){
+                    println("Screen is still not interactive!?  Maybe the password '${devicePassword}' tried is wrong?\n" +
                             "You can set the password used with the '${prop}' system property.\n" +
                             "Moving on to try and let Appium unlock the screen.")
                 }
             } else {
-                println("Screen is not locked.  Moving on.")
+                println("Screen is interactive.  Moving on.")
             }
         } else {
-            println("Screen is not locked.  Moving on.")
+            println("Screen is interactive.  Moving on.")
         }
     }
 
-    /**
-     * Attempts to detect if the screen of a mobile device is locked.
-     * A try/catch loop is used because we've seen some 'adb shell dumpsys power' command fail to return anything.
-     * I think this is occurring when the screen has turned back off before this code is run which I think is happening
-     * when the device's power is oscillating between 100% and just below and the screen goes on and off on it's own.
-     * @return true if locked, false otherwise
-     */
-    static private boolean isScreenLocked(){
-        int numTries=3
-        for(int i=0; i<numTries; i++){
-            try {
-                String unlockedIndicator = executeAdbCommand("shell dumpsys power")
-                // Note: this indicator will NOT work if this setting is on: Settings/Display/Daydream
-                String unlockedIndicatorKey = 'mUserActivityTimeoutOverrideFromWindowManager'
-                unlockedIndicator = unlockedIndicator.substring(unlockedIndicator.indexOf(unlockedIndicatorKey))
-                unlockedIndicator = unlockedIndicator.substring(unlockedIndicator.indexOf('=')+1, unlockedIndicator.indexOf('\n')).trim()
-                if(unlockedIndicator == '-1') {
-                    return false
-                } else {
-                    return true
-                }
-
-                // exit the loop as everything worked if you got here
-                i=numTries
-            } catch(IndexOutOfBoundsException e){
-                // do nothing
-            }
-        }
-
-        // you must have failed 3 times so just exit and say the screen is unlocked and see if appium can deal with it
-        return false
+/**
+ * Detects if the screen of a mobile device is interactive (i.e. on and unlocked).
+ * @return true if interactive, false otherwise
+ */
+    static private boolean isInteractive(){
+        executeAdbCommand("shell service call trust 7").contains("Result: Parcel(00000000 00000001   '........')")
     }
 
     /**
