@@ -3,6 +3,7 @@ package geb.mobile.driver
 import groovy.util.logging.Slf4j
 import io.appium.java_client.android.AndroidDriver
 import io.appium.java_client.ios.IOSDriver
+import io.appium.java_client.remote.MobileCapabilityType
 import io.selendroid.SelendroidCapabilities
 import io.selendroid.SelendroidDriver
 import org.openqa.selenium.Platform
@@ -61,6 +62,7 @@ class GebMobileDriverFactory {
             DesiredCapabilities capa = new DesiredCapabilities()
             //set default platform to android
             capa.setCapability("platformName", "Android");
+			capa.setCapability(MobileCapabilityType.NEW_COMMAND_TIMEOUT, "200000");
 
             System.properties.each { String k, v ->
                 def m = k =~ /^appium_(.*)$/
