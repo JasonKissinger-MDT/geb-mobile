@@ -109,6 +109,7 @@ class AndroidBasicLocatorSpec extends Specification {
         then:
         1 * mockContextElement.findElements(by) >> []
         1 * mockContextElement.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
+        1 * mockDriver.findElements(MobileBy.AndroidUIAutomator("new UiSelector().scrollable(true)"))
         2 * mockNavigatorFactory.createFromWebElements([])
         0 * _
     }
