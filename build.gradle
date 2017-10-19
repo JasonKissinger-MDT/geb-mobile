@@ -305,6 +305,7 @@ task uploadApk2Saucelabs(){
 
         try {
             logger.lifecycle "uploading appfile size:" + appFile?.bytes?.size()
+            sauceStorage.ignoreSSLIssues()
             sauceStorage.post(requestContentType: ContentType.BINARY, body: appFile.bytes)
         } catch (Exception e) {
             e.printStackTrace()
